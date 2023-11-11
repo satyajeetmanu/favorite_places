@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:favorite_places/models/place.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:http/http.dart' as http;
 
 class LocationInput extends StatefulWidget {
   const LocationInput({super.key});
@@ -9,7 +13,16 @@ class LocationInput extends StatefulWidget {
 }
 
 class _LocationInputState extends State<LocationInput> {
+  PlaceLocation? _pickedLocation;
   bool _isGettingLocation = false;
+
+  String get getImageUrl {
+    final lat = _pickedLocation!.latitude;
+    final lng = _pickedLocation!.longitude;
+    final String key = 'PtaVN8CBSuIP2jVxODWCizpR09MxF6bO&center';
+    return 'https://www.mapquestapi.com/staticmap/v5/map?key=$key&locations=$lat,$lng&zoom=14&size=400,200@2x';
+  }
+
   void _getCurrentLocation() async {
     Location location = Location();
 
@@ -38,13 +51,26 @@ class _LocationInputState extends State<LocationInput> {
     });
 
     locationData = await location.getLocation();
+    final latitude = locationData.latitude;
+    final longitude = locationData.longitude;
+    if (latitude == null || longitude == null) {
+      return;
+    }
+    final String requestUrl =
+        'https://api.opencagedata.com/geocode/v1/json?q=$latitude,$longitude&key=fd85220365d7412d86eae9a3fb38af72';
+
+    final response = await http.get(Uri.parse(requestUrl));
+
+    final responseData = json.decode(response.body);
+    final address = responseData['results'][0]['formatted'];
 
     setState(() {
+      _pickedLocation = PlaceLocation(
+          latitude: latitude, longitude: longitude, address: address);
       _isGettingLocation = false;
     });
 
-    print(locationData.latitude);
-    print(locationData.longitude);
+    print(address);
   }
 
   @override
@@ -56,9 +82,18 @@ class _LocationInputState extends State<LocationInput> {
           .bodyLarge!
           .copyWith(color: Theme.of(context).colorScheme.onBackground),
     );
+    if (_pickedLocation != null) {
+      previewContent = Image.network(
+        getImageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
     if (_isGettingLocation) {
       previewContent = const CircularProgressIndicator();
     }
+
     return Column(
       children: [
         Container(
