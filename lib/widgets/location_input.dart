@@ -6,8 +6,9 @@ import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
 class LocationInput extends StatefulWidget {
-  const LocationInput({super.key});
+  const LocationInput({super.key, required this.onSelectLocation});
 
+  final void Function(PlaceLocation location) onSelectLocation;
   @override
   State<LocationInput> createState() => _LocationInputState();
 }
@@ -19,7 +20,7 @@ class _LocationInputState extends State<LocationInput> {
   String get getImageUrl {
     final lat = _pickedLocation!.latitude;
     final lng = _pickedLocation!.longitude;
-    final String key = 'PtaVN8CBSuIP2jVxODWCizpR09MxF6bO&center';
+    const String key = 'PtaVN8CBSuIP2jVxODWCizpR09MxF6bO&center';
     return 'https://www.mapquestapi.com/staticmap/v5/map?key=$key&locations=$lat,$lng&zoom=14&size=400,200@2x';
   }
 
@@ -70,7 +71,7 @@ class _LocationInputState extends State<LocationInput> {
       _isGettingLocation = false;
     });
 
-    print(address);
+    widget.onSelectLocation(_pickedLocation!);
   }
 
   @override
