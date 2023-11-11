@@ -23,6 +23,11 @@ class PlacesList extends StatelessWidget {
       itemCount: places.length,
       itemBuilder: (ctx, index) {
         return ListTile(
+          contentPadding: const EdgeInsets.all(6),
+          leading: CircleAvatar(
+            radius: 26,
+            backgroundImage: FileImage(places[index].image),
+          ),
           title: Text(
             places[index].title,
             style: Theme.of(context)
